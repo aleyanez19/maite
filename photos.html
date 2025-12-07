@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #F5F0E8;
+            color: #4A3728;
+            overflow-x: hidden;
+        }
+
+        /* Vertical side navigation */
+        .side-nav {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            writing-mode: vertical-rl;
+            z-index: 1000;
+            display: flex;
+            gap: 40px;
+        }
+
+        .side-nav a {
+            text-decoration: none;
+            color: #6B5544;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .side-nav a::before {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background: transparent;
+            border: 1px solid #6B5544;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            transition: all 0.3s;
+        }
+
+        .side-nav a:hover::before,
+        .side-nav a.active::before {
+            background: #6B5544;
+        }
+
+        /* Gallery Container */
+        .gallery-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 80px 60px;
+        }
+
+        /* Header */
+        .gallery-header {
+            margin-bottom: 100px;
+        }
+
+        .gallery-title {
+            font-size: 120px;
+            font-family: 'Georgia', serif;
+            font-weight: 300;
+            color: #4A3728;
+            margin-bottom: 10px;
+        }
+
+        .gallery-subtitle {
+            font-size: 12px;
+            letter-spacing: 5px;
+            color: #6B5544;
+        }
+
+        /* Asymmetric Bento Grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 300px;
+            gap: 20px;
+            margin-bottom: 100px;
+        }
+
+        .photo-box {
+            background: white;
+            border: 1px solid #E8DCC4;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .photo-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #F5F0E8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.3s;
+            z-index: 1;
+        }
+
+        .photo-box::after {
+            content: '[PHOTO]';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #6B5544;
+            font-size: 12px;
+            letter-spacing: 2px;
+            z-index: 2;
+        }
+
+        .photo-box:hover {
+            transform: scale(1.02);
+            border-color: #6B5544;
+            z-index: 10;
+        }
+
+        /* Grid variations */
+        .photo-box.wide {
+            grid-column: span 2;
+        }
+
+        .photo-box.tall {
+            grid-row: span 2;
+        }
+
+        .photo-box.large {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        /* Caption overlay */
+        .photo-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(245, 240, 232, 0.95);
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 3;
+        }
+
+        .photo-box:hover .photo-caption {
+            transform: translateY(0);
+        }
+
+        .caption-title {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #4A3728;
+            font-weight: 400;
+        }
+
+        .caption-meta {
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #6B5544;
+        }
+
+        /* Series Section */
+        .series-section {
+            margin: 150px 0;
+            border-top: 1px solid #C9ADA7;
+            padding-top: 80px;
+        }
+
+        .series-title {
+            font-size: 48px;
+            font-family: 'Georgia', serif;
+            font-weight: 300;
+            margin-bottom: 20px;
+            color: #4A3728;
+        }
+
+        .series-description {
+            font-size: 14px;
+            line-height: 2;
+            color: #6B5544;
+            max-width: 600px;
+            margin-bottom: 60px;
+        }
+
+        .series-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+
+        .series-item {
+            background: white;
+            border: 1px solid #E8DCC4;
+        }
+
+        .series-image {
+            width: 100%;
+            height: 400px;
+            background: #E8DCC4;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .series-image::after {
+            content: '[SERIES PHOTO]';
+            color: #6B5544;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+
+        .series-info {
+            padding: 30px;
+        }
+
+        .series-info h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #4A3728;
+        }
+
+        .series-info p {
+            font-size: 12px;
+            line-height: 1.8;
+            color: #6B5544;
+        }
+
+        /* Full width feature */
+        .feature-section {
+            margin: 150px 0;
+            height: 80vh;
+            background: white;
+            border: 1px solid #C9ADA7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .feature-section::after {
+            content: '[FEATURED PHOTO - FULL BLEED]';
+            color: #6B5544;
+            font-size: 14px;
+            letter-spacing: 3px;
+        }
+
+        .feature-caption {
+            position: absolute;
+            bottom: 60px;
+            left: 60px;
+            max-width: 400px;
+            background: rgba(245, 240, 232, 0.95);
+            padding: 30px;
+            border: 1px solid #C9ADA7;
+        }
+
+        .feature-caption h2 {
+            font-size: 24px;
+            font-family: 'Georgia', serif;
+            font-weight: 300;
+            margin-bottom: 15px;
+            color: #4A3728;
+        }
+
+        .feature-caption p {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #6B5544;
+        }
+
+        @media (max-width: 1024px) {
+            .bento-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .series-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+            .photo-box.wide,
+            .photo-box.tall,
+            .photo-box.large {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+            .series-grid {
+                grid-template-columns: 1fr;
+            }
+            .gallery-title {
+                font-size: 60px;
+            }
+            .side-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Vertical Side Navigation -->
+    <nav class="side-nav">
+        <a href="index.html">INDEX</a>
+        <a href="python.html">PYTHON</a>
+        <a href="poems.html">POEMS</a>
+        <a href="photos.html" class="active">PHOTOS</a>
+    </nav>
+
+    <div class="gallery-container">
+        <!-- Header -->
+        <div class="gallery-header">
+            <h1 class="gallery-title">Photos</h1>
+            <p class="gallery-subtitle">RESPONSABILIDAD DE COMPARTIR</p>
+        </div>
+
+        <!-- Bento Grid Gallery -->
+        <div class="bento-grid">
+            <!-- Large featured -->
+            <div class="photo-box large">
+                <div class="photo-caption">
+                    <div class="caption-title">Featured Image Title</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Tall -->
+            <div class="photo-box tall">
+                <div class="photo-caption">
+                    <div class="caption-title">Portrait or Vertical</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Regular -->
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Square Format</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Wide -->
+            <div class="photo-box wide">
+                <div class="photo-caption">
+                    <div class="caption-title">Panoramic View</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Regular -->
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image Title</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Regular -->
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image Title</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Tall -->
+            <div class="photo-box tall">
+                <div class="photo-caption">
+                    <div class="caption-title">Vertical Shot</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Regular -->
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image Title</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Wide -->
+            <div class="photo-box wide">
+                <div class="photo-caption">
+                    <div class="caption-title">Wide Format</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <!-- Regular -->
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image Title</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Full Width -->
+        <div class="feature-section">
+            <div class="feature-caption">
+                <h2>Featured Work</h2>
+                <p>This is where you'd describe a particularly meaningful photograph. 
+                The story behind it, what you were trying to capture, what it means to you.</p>
+            </div>
+        </div>
+
+        <!-- Series Section -->
+        <div class="series-section">
+            <h2 class="series-title">A Series</h2>
+            <p class="series-description">
+                Sometimes photographs work better as a collection. This is where you showcase
+                a thematic series—a specific location, a mood, a concept explored across multiple images.
+            </p>
+            
+            <div class="series-grid">
+                <div class="series-item">
+                    <div class="series-image"></div>
+                    <div class="series-info">
+                        <h3>Part I</h3>
+                        <p>Description of this photograph within the series.</p>
+                    </div>
+                </div>
+
+                <div class="series-item">
+                    <div class="series-image"></div>
+                    <div class="series-info">
+                        <h3>Part II</h3>
+                        <p>Description of this photograph within the series.</p>
+                    </div>
+                </div>
+
+                <div class="series-item">
+                    <div class="series-image"></div>
+                    <div class="series-info">
+                        <h3>Part III</h3>
+                        <p>Description of this photograph within the series.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Another Bento Grid -->
+        <div class="bento-grid">
+            <div class="photo-box wide">
+                <div class="photo-caption">
+                    <div class="caption-title">More Photos</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <div class="photo-box tall">
+                <div class="photo-caption">
+                    <div class="caption-title">Vertical</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <div class="photo-box large">
+                <div class="photo-caption">
+                    <div class="caption-title">Large Format</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+
+            <div class="photo-box">
+                <div class="photo-caption">
+                    <div class="caption-title">Image</div>
+                    <div class="caption-meta">Location — Date</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
