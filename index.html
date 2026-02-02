@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Alejandra</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Allura&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -100,18 +100,18 @@
             align-items: center;
             min-height: 100vh;
             padding: 4rem;
-            cursor: pointer;
             position: relative;
         }
 
         .title-container {
             position: relative;
             text-align: center;
+            cursor: pointer;
         }
 
         .title-main {
             font-family: 'Outfit', sans-serif;
-            font-size: clamp(5rem, 18vw, 16rem);
+            font-size: clamp(3.5rem, 12vw, 10rem);
             font-weight: 900;
             letter-spacing: -0.04em;
             line-height: 0.85;
@@ -123,11 +123,11 @@
         }
 
         .title-script {
-            font-family: 'Dancing Script', cursive;
-            font-size: clamp(3rem, 10vw, 9rem);
-            font-weight: 600;
+            font-family: 'Allura', cursive;
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 400;
             color: var(--text-primary);
-            margin-top: -1.5rem;
+            margin-top: -1rem;
             display: block;
             position: relative;
             transition: opacity 0.3s ease;
@@ -145,12 +145,12 @@
             transition: opacity 0.4s ease;
         }
 
-        .hero:hover #pixelCanvas {
+        .title-container:hover #pixelCanvas {
             opacity: 1;
         }
 
-        .hero:hover .title-main,
-        .hero:hover .title-script {
+        .title-container:hover .title-main,
+        .title-container:hover .title-script {
             opacity: 0;
         }
 
@@ -284,7 +284,7 @@
         const ctx = canvas.getContext('2d');
 
         let isHovering = false;
-        let animationFrame;
+        let pixelData = null;
 
         // Setup canvas
         function setupCanvas() {
@@ -293,10 +293,8 @@
             canvas.height = rect.height;
         }
 
-        // Pixelation effect
-        function pixelateText() {
-            if (!isHovering) return;
-
+        // Create static pixelation data
+        function createPixelData() {
             setupCanvas();
             
             // Create temporary canvas with text
@@ -313,57 +311,57 @@
             tempCtx.fillText('PORTFOLIO', tempCanvas.width / 2, 0);
 
             // Draw Alejandra
-            tempCtx.font = `600 ${titleScript.offsetHeight}px Dancing Script`;
-            tempCtx.fillText('Alejandra', tempCanvas.width / 2, titleMain.offsetHeight - 30);
+            tempCtx.font = `400 ${titleScript.offsetHeight}px Allura`;
+            tempCtx.fillText('Alejandra', tempCanvas.width / 2, titleMain.offsetHeight - 20);
 
             // Get image data
             const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
             const pixels = imageData.data;
 
-            // Clear main canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Store pixel data
+            pixelData = [];
+            const pixelSize = 3; // Smaller pixels
 
-            // Pixelation parameters
-            const pixelSize = 8;
-            const disperseAmount = Math.random() * 20 + 10;
-
-            // Draw pixelated version
             for (let y = 0; y < tempCanvas.height; y += pixelSize) {
                 for (let x = 0; x < tempCanvas.width; x += pixelSize) {
                     const i = (y * tempCanvas.width + x) * 4;
                     const alpha = pixels[i + 3];
 
                     if (alpha > 128) {
-                        // Random displacement for dynamic effect
-                        const offsetX = (Math.random() - 0.5) * disperseAmount;
-                        const offsetY = (Math.random() - 0.5) * disperseAmount;
-                        
-                        ctx.fillStyle = `rgba(26, 26, 26, ${alpha / 255})`;
-                        ctx.fillRect(
-                            x + offsetX,
-                            y + offsetY,
-                            pixelSize - 1,
-                            pixelSize - 1
-                        );
+                        pixelData.push({
+                            x: x,
+                            y: y,
+                            size: pixelSize,
+                            alpha: alpha / 255
+                        });
                     }
                 }
             }
-
-            animationFrame = requestAnimationFrame(pixelateText);
         }
 
-        // Mouse events
-        hero.addEventListener('mouseenter', () => {
+        // Draw static pixelation
+        function drawPixels() {
+            if (!pixelData) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            pixelData.forEach(pixel => {
+                ctx.fillStyle = `rgba(26, 26, 26, ${pixel.alpha})`;
+                ctx.fillRect(pixel.x, pixel.y, pixel.size - 0.5, pixel.size - 0.5);
+            });
+        }
+
+        // Mouse events on title container only
+        titleContainer.addEventListener('mouseenter', () => {
             isHovering = true;
-            setupCanvas();
-            pixelateText();
+            if (!pixelData) {
+                createPixelData();
+            }
+            drawPixels();
         });
 
-        hero.addEventListener('mouseleave', () => {
+        titleContainer.addEventListener('mouseleave', () => {
             isHovering = false;
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-            }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         });
 
@@ -376,7 +374,11 @@
 
         // Window resize
         window.addEventListener('resize', () => {
+            pixelData = null; // Reset pixel data on resize
             if (isHovering) {
+                createPixelData();
+                drawPixels();
+            } else {
                 setupCanvas();
             }
         });
