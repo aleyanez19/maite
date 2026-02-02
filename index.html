@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Alejandra</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Allura&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -16,136 +18,88 @@
             --text-primary: #1a1a1a;
             --text-secondary: #7a7a7a;
             --bg-primary: #fafafa;
-            --accent: #2a2a2a;
         }
 
         body {
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Outfit', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Header Navigation - Editorial Style */
         header {
             position: fixed;
             top: 0;
-            left: 0;
-            right: 0;
+            width: 100%;
             padding: 1.5rem 4rem;
-            background: transparent;
-            z-index: 1000;
             opacity: 0;
             pointer-events: none;
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: 0.6s ease;
+            background: rgba(250,250,250,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            z-index: 1000;
         }
 
         header.visible {
             opacity: 1;
-            pointer-events: all;
-            background: rgba(250, 250, 250, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            pointer-events: auto;
         }
 
         nav {
             max-width: 1600px;
-            margin: 0 auto;
+            margin: auto;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-left {
-            display: flex;
-            gap: 2.5rem;
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 2.5rem;
         }
 
         nav a {
             text-decoration: none;
             color: var(--text-primary);
-            font-size: 0.813rem;
-            font-weight: 400;
-            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
-            position: relative;
-            transition: all 0.3s ease;
         }
 
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--text-primary);
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        nav a:hover::after {
-            width: 100%;
-        }
-
-        /* Hero Section - Dynamic Layout */
         .hero {
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 4rem;
             position: relative;
+            padding: 4rem;
         }
 
         .title-container {
             position: relative;
-            text-align: center;
             cursor: pointer;
+            text-align: center;
         }
 
         .title-main {
-            font-family: 'Outfit', sans-serif;
             font-size: clamp(3.5rem, 12vw, 10rem);
             font-weight: 900;
             letter-spacing: -0.04em;
             line-height: 0.85;
-            color: var(--text-primary);
-            text-transform: uppercase;
-            display: block;
-            position: relative;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
 
         .title-script {
             font-family: 'Allura', cursive;
             font-size: clamp(2.5rem, 8vw, 6rem);
-            font-weight: 400;
-            color: var(--text-primary);
             margin-top: -1rem;
-            display: block;
-            position: relative;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
 
-        /* Pixelation Canvas */
-        #pixelCanvas {
+        canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s ease;
         }
 
-        .title-container:hover #pixelCanvas {
+        .title-container:hover canvas {
             opacity: 1;
         }
 
@@ -154,392 +108,149 @@
             opacity: 0;
         }
 
-        /* Corner details - Editorial touch */
-        .corner-detail {
+        .corner {
             position: fixed;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             letter-spacing: 0.1em;
-            text-transform: uppercase;
             color: var(--text-secondary);
             opacity: 0;
-            transition: opacity 0.8s ease 0.4s;
+            transition: opacity 0.8s ease 0.3s;
         }
 
-        .corner-detail.visible {
+        .corner.visible {
             opacity: 1;
         }
 
-        .corner-detail.top-left {
+        .corner.top-left {
             top: 2rem;
             left: 4rem;
         }
 
-        .corner-detail.bottom-right {
+        .corner.bottom-right {
             bottom: 2rem;
             right: 4rem;
         }
-
-        /* Subtle background texture */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0, 0, 0, 0.01) 2px,
-                    rgba(0, 0, 0, 0.01) 4px
-                );
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            header {
-                padding: 1.5rem 2.5rem;
-            }
-
-            nav {
-                flex-direction: column;
-                gap: 1.5rem;
-            }
-
-            .nav-left,
-            .nav-right {
-                gap: 1.5rem;
-            }
-
-            .corner-detail.top-left {
-                left: 2.5rem;
-            }
-
-            .corner-detail.bottom-right {
-                right: 2.5rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            header {
-                padding: 1.5rem 2rem;
-            }
-
-            .hero {
-                padding: 2rem;
-            }
-
-            nav a {
-                font-size: 0.75rem;
-            }
-
-            .corner-detail {
-                font-size: 0.65rem;
-            }
-        }
     </style>
 </head>
+
 <body>
-    <!-- Corner Details - Editorial Touch -->
-    <div class="corner-detail top-left" id="cornerLeft">Index</div>
-    <div class="corner-detail bottom-right" id="cornerRight">2024</div>
 
-    <!-- Header Navigation -->
-    <header id="header">
-        <nav>
-            <div class="nav-left">
-                <a href="fotos.html">Fotos</a>
-                <a href="poemas.html">Poemas</a>
-            </div>
-            <div class="nav-right">
-                <a href="videos.html">Videos</a>
-                <a href="proyectos.html">Proyectos</a>
-            </div>
-        </nav>
-    </header>
+<div class="corner top-left" id="cornerLeft">Index</div>
+<div class="corner bottom-right" id="cornerRight">2024</div>
 
-    <!-- Hero Section -->
-    <section class="hero" id="hero">
-        <div class="title-container" id="titleContainer">
-            <canvas id="pixelCanvas"></canvas>
-            <div class="title-main" id="titleMain">PORTFOLIO</div>
-            <div class="title-script" id="titleScript">Alejandra</div>
+<header id="header">
+    <nav>
+        <div>
+            <a href="fotos.html">Fotos</a>
+            <a href="poemas.html">Poemas</a>
         </div>
-    </section>
+        <div>
+            <a href="videos.html">Videos</a>
+            <a href="proyectos.html">Proyectos</a>
+        </div>
+    </nav>
+</header>
 
-    <script>
-        const hero = document.getElementById('hero');
-        const header = document.getElementById('header');
-        const cornerLeft = document.getElementById('cornerLeft');
-        const cornerRight = document.getElementById('cornerRight');
-        const titleContainer = document.getElementById('titleContainer');
-        const titleMain = document.getElementById('titleMain');
-        const titleScript = document.getElementById('titleScript');
-        const canvas = document.getElementById('pixelCanvas');
-        const ctx = canvas.getContext('2d');
+<section class="hero" id="hero">
+    <div class="title-container" id="titleContainer">
+        <canvas id="pixelCanvas"></canvas>
+        <div class="title-main">PORTFOLIO</div>
+        <div class="title-script">Alejandra</div>
+    </div>
+</section>
 
-        let isHovering = false;
-        let pixelData = null;
-        let animationFrame = null;
-        let lifePatterns = [];
-        let frameCount = 0;
+<script>
+const canvas = document.getElementById('pixelCanvas');
+const ctx = canvas.getContext('2d');
+const titleContainer = document.getElementById('titleContainer');
+const header = document.getElementById('header');
+const cornerLeft = document.getElementById('cornerLeft');
+const cornerRight = document.getElementById('cornerRight');
 
-        // Conway's Game of Life inspired patterns (fractal and geometric)
-        const patterns = {
-            // Glider pattern (moves diagonally)
-            glider: [
-                [0, 1, 0],
-                [0, 0, 1],
-                [1, 1, 1]
-            ],
-            // Lightweight spaceship (moves horizontally)
-            lwss: [
-                [0, 1, 1, 1, 1],
-                [1, 0, 0, 0, 1],
-                [0, 0, 0, 0, 1],
-                [1, 0, 0, 1, 0]
-            ],
-            // Blinker (oscillates)
-            blinker: [
-                [1, 1, 1]
-            ],
-            // Toad (oscillates)
-            toad: [
-                [0, 1, 1, 1],
-                [1, 1, 1, 0]
-            ],
-            // Beacon (oscillates)
-            beacon: [
-                [1, 1, 0, 0],
-                [1, 0, 0, 0],
-                [0, 0, 0, 1],
-                [0, 0, 1, 1]
-            ],
-            // Pulsar (geometric oscillator)
-            pulsar: [
-                [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-                [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0]
-            ]
-        };
+let pixels = [];
+let animationFrame;
+let isHovering = false;
+let time = 0;
 
-        class LifePattern {
-            constructor(pattern, x, y, pixelSize) {
-                this.pattern = pattern;
-                this.x = x;
-                this.y = y;
-                this.pixelSize = pixelSize;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.rotation = 0;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
-                this.oscillatePhase = Math.random() * Math.PI * 2;
-                this.oscillateSpeed = 0.05;
-                this.type = Math.random() > 0.5 ? 'move' : 'oscillate';
-            }
+function resizeCanvas() {
+    const r = titleContainer.getBoundingClientRect();
+    canvas.width = r.width;
+    canvas.height = r.height;
+}
 
-            update(canvasWidth, canvasHeight) {
-                if (this.type === 'move') {
-                    // Moving patterns
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    this.rotation += this.rotationSpeed;
+class Pixel {
+    constructor(x, y, size) {
+        this.x = x;
+        this.y = y;
+        this.baseX = x;
+        this.baseY = y;
+        this.size = size;
+        this.phase = Math.random() * Math.PI * 2;
+        this.speed = 0.002 + Math.random() * 0.004;
+        this.amp = 3 + Math.random() * 10;
+    }
 
-                    // Wrap around edges
-                    if (this.x < -50) this.x = canvasWidth + 50;
-                    if (this.x > canvasWidth + 50) this.x = -50;
-                    if (this.y < -50) this.y = canvasHeight + 50;
-                    if (this.y > canvasHeight + 50) this.y = -50;
-                } else {
-                    // Oscillating patterns
-                    this.oscillatePhase += this.oscillateSpeed;
-                    this.rotation = Math.sin(this.oscillatePhase) * 0.3;
-                }
-            }
+    update(t) {
+        this.x = this.baseX + Math.sin(t * this.speed + this.phase) * this.amp;
+        this.y = this.baseY + Math.cos(t * this.speed + this.phase) * this.amp;
+    }
 
-            draw(ctx) {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
+    draw() {
+        ctx.fillStyle = 'rgba(26,26,26,0.35)';
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+    }
+}
 
-                const scale = this.type === 'oscillate' ? 
-                    1 + Math.sin(this.oscillatePhase) * 0.2 : 1;
+function createPixelField() {
+    resizeCanvas();
+    pixels = [];
+    const density = 4; // ↓ baja a 3 si quieres AÚN MÁS píxeles
+    const size = 2;
 
-                for (let row = 0; row < this.pattern.length; row++) {
-                    for (let col = 0; col < this.pattern[row].length; col++) {
-                        if (this.pattern[row][col] === 1) {
-                            const px = (col - this.pattern[row].length / 2) * this.pixelSize * scale;
-                            const py = (row - this.pattern.length / 2) * this.pixelSize * scale;
-                            
-                            ctx.fillStyle = 'rgba(26, 26, 26, 0.6)';
-                            ctx.fillRect(px, py, this.pixelSize - 0.5, this.pixelSize - 0.5);
-                        }
-                    }
-                }
-
-                ctx.restore();
+    for (let y = 0; y < canvas.height; y += density) {
+        for (let x = 0; x < canvas.width; x += density) {
+            if (Math.random() > 0.15) {
+                pixels.push(new Pixel(x, y, size));
             }
         }
+    }
+}
 
-        // Setup canvas
-        function setupCanvas() {
-            const rect = titleContainer.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-        }
+function animate() {
+    if (!isHovering) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    time++;
 
-        // Create static pixelation data
-        function createPixelData() {
-            setupCanvas();
-            
-            // Create temporary canvas with text
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
+    pixels.forEach(p => {
+        p.update(time);
+        p.draw();
+    });
 
-            // Draw PORTFOLIO
-            tempCtx.font = `900 ${titleMain.offsetHeight}px Outfit`;
-            tempCtx.fillStyle = '#1a1a1a';
-            tempCtx.textAlign = 'center';
-            tempCtx.textBaseline = 'top';
-            tempCtx.fillText('PORTFOLIO', tempCanvas.width / 2, 0);
+    animationFrame = requestAnimationFrame(animate);
+}
 
-            // Draw Alejandra
-            tempCtx.font = `400 ${titleScript.offsetHeight}px Allura`;
-            tempCtx.fillText('Alejandra', tempCanvas.width / 2, titleMain.offsetHeight - 20);
+titleContainer.addEventListener('mouseenter', () => {
+    isHovering = true;
+    createPixelField();
+    animate();
+});
 
-            // Get image data
-            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-            const pixels = imageData.data;
+titleContainer.addEventListener('mouseleave', () => {
+    isHovering = false;
+    cancelAnimationFrame(animationFrame);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
 
-            // Store pixel data
-            pixelData = [];
-            const pixelSize = 3; // Smaller pixels
+document.getElementById('hero').addEventListener('click', () => {
+    header.classList.add('visible');
+    cornerLeft.classList.add('visible');
+    cornerRight.classList.add('visible');
+});
 
-            for (let y = 0; y < tempCanvas.height; y += pixelSize) {
-                for (let x = 0; x < tempCanvas.width; x += pixelSize) {
-                    const i = (y * tempCanvas.width + x) * 4;
-                    const alpha = pixels[i + 3];
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+</script>
 
-                    if (alpha > 128) {
-                        pixelData.push({
-                            x: x,
-                            y: y,
-                            size: pixelSize,
-                            alpha: alpha / 255
-                        });
-                    }
-                }
-            }
-
-            // Create Life patterns
-            createLifePatterns();
-        }
-
-        // Create Conway's Life inspired patterns
-        function createLifePatterns() {
-            lifePatterns = [];
-            const patternKeys = Object.keys(patterns);
-            const numPatterns = 8; // Number of patterns to spawn
-            const pixelSize = 3;
-
-            for (let i = 0; i < numPatterns; i++) {
-                const randomPattern = patterns[patternKeys[Math.floor(Math.random() * patternKeys.length)]];
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                lifePatterns.push(new LifePattern(randomPattern, x, y, pixelSize));
-            }
-        }
-
-        // Animation loop for Life patterns
-        function animateLifePatterns() {
-            if (!isHovering) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw static pixelated text
-            if (pixelData) {
-                pixelData.forEach(pixel => {
-                    ctx.fillStyle = `rgba(26, 26, 26, ${pixel.alpha})`;
-                    ctx.fillRect(pixel.x, pixel.y, pixel.size - 0.5, pixel.size - 0.5);
-                });
-            }
-
-            // Update and draw Life patterns
-            lifePatterns.forEach(pattern => {
-                pattern.update(canvas.width, canvas.height);
-                pattern.draw(ctx);
-            });
-
-            frameCount++;
-
-            // Spawn new patterns occasionally
-            if (frameCount % 180 === 0 && lifePatterns.length < 12) {
-                const patternKeys = Object.keys(patterns);
-                const randomPattern = patterns[patternKeys[Math.floor(Math.random() * patternKeys.length)]];
-                const edge = Math.floor(Math.random() * 4);
-                let x, y;
-                
-                switch(edge) {
-                    case 0: x = Math.random() * canvas.width; y = -20; break;
-                    case 1: x = canvas.width + 20; y = Math.random() * canvas.height; break;
-                    case 2: x = Math.random() * canvas.width; y = canvas.height + 20; break;
-                    case 3: x = -20; y = Math.random() * canvas.height; break;
-                }
-                
-                lifePatterns.push(new LifePattern(randomPattern, x, y, 3));
-            }
-
-            animationFrame = requestAnimationFrame(animateLifePatterns);
-        }
-
-        // Mouse events on title container only
-        titleContainer.addEventListener('mouseenter', () => {
-            isHovering = true;
-            if (!pixelData) {
-                createPixelData();
-            }
-            frameCount = 0;
-            animateLifePatterns();
-        });
-
-        titleContainer.addEventListener('mouseleave', () => {
-            isHovering = false;
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-            }
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            lifePatterns = [];
-        });
-
-        // Show navigation and details on click
-        hero.addEventListener('click', () => {
-            header.classList.add('visible');
-            cornerLeft.classList.add('visible');
-            cornerRight.classList.add('visible');
-        });
-
-        // Window resize
-        window.addEventListener('resize', () => {
-            pixelData = null; // Reset pixel data on resize
-            if (isHovering) {
-                createPixelData();
-            } else {
-                setupCanvas();
-            }
-        });
-
-        // Initial setup
-        setupCanvas();
-    </script>
 </body>
 </html>
+
