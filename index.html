@@ -285,6 +285,109 @@
 
         let isHovering = false;
         let pixelData = null;
+        let animationFrame = null;
+        let lifePatterns = [];
+        let frameCount = 0;
+
+        // Conway's Game of Life inspired patterns (fractal and geometric)
+        const patterns = {
+            // Glider pattern (moves diagonally)
+            glider: [
+                [0, 1, 0],
+                [0, 0, 1],
+                [1, 1, 1]
+            ],
+            // Lightweight spaceship (moves horizontally)
+            lwss: [
+                [0, 1, 1, 1, 1],
+                [1, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1],
+                [1, 0, 0, 1, 0]
+            ],
+            // Blinker (oscillates)
+            blinker: [
+                [1, 1, 1]
+            ],
+            // Toad (oscillates)
+            toad: [
+                [0, 1, 1, 1],
+                [1, 1, 1, 0]
+            ],
+            // Beacon (oscillates)
+            beacon: [
+                [1, 1, 0, 0],
+                [1, 0, 0, 0],
+                [0, 0, 0, 1],
+                [0, 0, 1, 1]
+            ],
+            // Pulsar (geometric oscillator)
+            pulsar: [
+                [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+                [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0]
+            ]
+        };
+
+        class LifePattern {
+            constructor(pattern, x, y, pixelSize) {
+                this.pattern = pattern;
+                this.x = x;
+                this.y = y;
+                this.pixelSize = pixelSize;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.rotation = 0;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                this.oscillatePhase = Math.random() * Math.PI * 2;
+                this.oscillateSpeed = 0.05;
+                this.type = Math.random() > 0.5 ? 'move' : 'oscillate';
+            }
+
+            update(canvasWidth, canvasHeight) {
+                if (this.type === 'move') {
+                    // Moving patterns
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.rotation += this.rotationSpeed;
+
+                    // Wrap around edges
+                    if (this.x < -50) this.x = canvasWidth + 50;
+                    if (this.x > canvasWidth + 50) this.x = -50;
+                    if (this.y < -50) this.y = canvasHeight + 50;
+                    if (this.y > canvasHeight + 50) this.y = -50;
+                } else {
+                    // Oscillating patterns
+                    this.oscillatePhase += this.oscillateSpeed;
+                    this.rotation = Math.sin(this.oscillatePhase) * 0.3;
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const scale = this.type === 'oscillate' ? 
+                    1 + Math.sin(this.oscillatePhase) * 0.2 : 1;
+
+                for (let row = 0; row < this.pattern.length; row++) {
+                    for (let col = 0; col < this.pattern[row].length; col++) {
+                        if (this.pattern[row][col] === 1) {
+                            const px = (col - this.pattern[row].length / 2) * this.pixelSize * scale;
+                            const py = (row - this.pattern.length / 2) * this.pixelSize * scale;
+                            
+                            ctx.fillStyle = 'rgba(26, 26, 26, 0.6)';
+                            ctx.fillRect(px, py, this.pixelSize - 0.5, this.pixelSize - 0.5);
+                        }
+                    }
+                }
+
+                ctx.restore();
+            }
+        }
 
         // Setup canvas
         function setupCanvas() {
@@ -337,18 +440,66 @@
                     }
                 }
             }
+
+            // Create Life patterns
+            createLifePatterns();
         }
 
-        // Draw static pixelation
-        function drawPixels() {
-            if (!pixelData) return;
+        // Create Conway's Life inspired patterns
+        function createLifePatterns() {
+            lifePatterns = [];
+            const patternKeys = Object.keys(patterns);
+            const numPatterns = 8; // Number of patterns to spawn
+            const pixelSize = 3;
+
+            for (let i = 0; i < numPatterns; i++) {
+                const randomPattern = patterns[patternKeys[Math.floor(Math.random() * patternKeys.length)]];
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                lifePatterns.push(new LifePattern(randomPattern, x, y, pixelSize));
+            }
+        }
+
+        // Animation loop for Life patterns
+        function animateLifePatterns() {
+            if (!isHovering) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            pixelData.forEach(pixel => {
-                ctx.fillStyle = `rgba(26, 26, 26, ${pixel.alpha})`;
-                ctx.fillRect(pixel.x, pixel.y, pixel.size - 0.5, pixel.size - 0.5);
+            // Draw static pixelated text
+            if (pixelData) {
+                pixelData.forEach(pixel => {
+                    ctx.fillStyle = `rgba(26, 26, 26, ${pixel.alpha})`;
+                    ctx.fillRect(pixel.x, pixel.y, pixel.size - 0.5, pixel.size - 0.5);
+                });
+            }
+
+            // Update and draw Life patterns
+            lifePatterns.forEach(pattern => {
+                pattern.update(canvas.width, canvas.height);
+                pattern.draw(ctx);
             });
+
+            frameCount++;
+
+            // Spawn new patterns occasionally
+            if (frameCount % 180 === 0 && lifePatterns.length < 12) {
+                const patternKeys = Object.keys(patterns);
+                const randomPattern = patterns[patternKeys[Math.floor(Math.random() * patternKeys.length)]];
+                const edge = Math.floor(Math.random() * 4);
+                let x, y;
+                
+                switch(edge) {
+                    case 0: x = Math.random() * canvas.width; y = -20; break;
+                    case 1: x = canvas.width + 20; y = Math.random() * canvas.height; break;
+                    case 2: x = Math.random() * canvas.width; y = canvas.height + 20; break;
+                    case 3: x = -20; y = Math.random() * canvas.height; break;
+                }
+                
+                lifePatterns.push(new LifePattern(randomPattern, x, y, 3));
+            }
+
+            animationFrame = requestAnimationFrame(animateLifePatterns);
         }
 
         // Mouse events on title container only
@@ -357,12 +508,17 @@
             if (!pixelData) {
                 createPixelData();
             }
-            drawPixels();
+            frameCount = 0;
+            animateLifePatterns();
         });
 
         titleContainer.addEventListener('mouseleave', () => {
             isHovering = false;
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            lifePatterns = [];
         });
 
         // Show navigation and details on click
@@ -377,7 +533,6 @@
             pixelData = null; // Reset pixel data on resize
             if (isHovering) {
                 createPixelData();
-                drawPixels();
             } else {
                 setupCanvas();
             }
