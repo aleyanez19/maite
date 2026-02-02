@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Alejandra</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -106,6 +106,7 @@
 
         .title-container {
             position: relative;
+            text-align: center;
         }
 
         .title-main {
@@ -117,51 +118,40 @@
             color: var(--text-primary);
             text-transform: uppercase;
             display: block;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            transition: opacity 0.3s ease;
         }
 
         .title-script {
-            font-family: 'Libre Baskerville', serif;
+            font-family: 'Dancing Script', cursive;
             font-size: clamp(3rem, 10vw, 9rem);
-            font-weight: 400;
-            font-style: italic;
+            font-weight: 600;
             color: var(--text-primary);
             margin-top: -1.5rem;
             display: block;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            left: 0.5rem;
+            transition: opacity 0.3s ease;
         }
 
-        /* Hover Effects - Refined */
-        .hero:hover .title-main {
-            letter-spacing: 0.08em;
-            transform: translateX(-10px);
-        }
-
-        .hero:hover .title-script {
-            letter-spacing: 0.12em;
-            transform: translateX(20px) translateY(-8px);
-        }
-
-        /* Decorative elements */
-        .title-container::before {
-            content: '';
+        /* Pixelation Canvas */
+        #pixelCanvas {
             position: absolute;
-            top: 50%;
-            left: -80px;
-            width: 40px;
-            height: 1px;
-            background: var(--text-primary);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
             opacity: 0;
-            transform: translateY(-50%) scaleX(0);
-            transform-origin: right;
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+            transition: opacity 0.4s ease;
         }
 
-        .hero:hover .title-container::before {
+        .hero:hover #pixelCanvas {
             opacity: 1;
-            transform: translateY(-50%) scaleX(1);
+        }
+
+        .hero:hover .title-main,
+        .hero:hover .title-script {
+            opacity: 0;
         }
 
         /* Corner details - Editorial touch */
@@ -244,14 +234,6 @@
                 padding: 2rem;
             }
 
-            .title-script {
-                left: 0;
-            }
-
-            .title-container::before {
-                display: none;
-            }
-
             nav a {
                 font-size: 0.75rem;
             }
@@ -283,9 +265,10 @@
 
     <!-- Hero Section -->
     <section class="hero" id="hero">
-        <div class="title-container">
-            <div class="title-main">PORTFOLIO</div>
-            <div class="title-script">Alejandra</div>
+        <div class="title-container" id="titleContainer">
+            <canvas id="pixelCanvas"></canvas>
+            <div class="title-main" id="titleMain">PORTFOLIO</div>
+            <div class="title-script" id="titleScript">Alejandra</div>
         </div>
     </section>
 
@@ -294,6 +277,95 @@
         const header = document.getElementById('header');
         const cornerLeft = document.getElementById('cornerLeft');
         const cornerRight = document.getElementById('cornerRight');
+        const titleContainer = document.getElementById('titleContainer');
+        const titleMain = document.getElementById('titleMain');
+        const titleScript = document.getElementById('titleScript');
+        const canvas = document.getElementById('pixelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let isHovering = false;
+        let animationFrame;
+
+        // Setup canvas
+        function setupCanvas() {
+            const rect = titleContainer.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        // Pixelation effect
+        function pixelateText() {
+            if (!isHovering) return;
+
+            setupCanvas();
+            
+            // Create temporary canvas with text
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+
+            // Draw PORTFOLIO
+            tempCtx.font = `900 ${titleMain.offsetHeight}px Outfit`;
+            tempCtx.fillStyle = '#1a1a1a';
+            tempCtx.textAlign = 'center';
+            tempCtx.textBaseline = 'top';
+            tempCtx.fillText('PORTFOLIO', tempCanvas.width / 2, 0);
+
+            // Draw Alejandra
+            tempCtx.font = `600 ${titleScript.offsetHeight}px Dancing Script`;
+            tempCtx.fillText('Alejandra', tempCanvas.width / 2, titleMain.offsetHeight - 30);
+
+            // Get image data
+            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const pixels = imageData.data;
+
+            // Clear main canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Pixelation parameters
+            const pixelSize = 8;
+            const disperseAmount = Math.random() * 20 + 10;
+
+            // Draw pixelated version
+            for (let y = 0; y < tempCanvas.height; y += pixelSize) {
+                for (let x = 0; x < tempCanvas.width; x += pixelSize) {
+                    const i = (y * tempCanvas.width + x) * 4;
+                    const alpha = pixels[i + 3];
+
+                    if (alpha > 128) {
+                        // Random displacement for dynamic effect
+                        const offsetX = (Math.random() - 0.5) * disperseAmount;
+                        const offsetY = (Math.random() - 0.5) * disperseAmount;
+                        
+                        ctx.fillStyle = `rgba(26, 26, 26, ${alpha / 255})`;
+                        ctx.fillRect(
+                            x + offsetX,
+                            y + offsetY,
+                            pixelSize - 1,
+                            pixelSize - 1
+                        );
+                    }
+                }
+            }
+
+            animationFrame = requestAnimationFrame(pixelateText);
+        }
+
+        // Mouse events
+        hero.addEventListener('mouseenter', () => {
+            isHovering = true;
+            setupCanvas();
+            pixelateText();
+        });
+
+        hero.addEventListener('mouseleave', () => {
+            isHovering = false;
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
 
         // Show navigation and details on click
         hero.addEventListener('click', () => {
@@ -302,15 +374,15 @@
             cornerRight.classList.add('visible');
         });
 
-        // Smooth scroll and navigation
-        document.querySelectorAll('nav a').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const section = this.getAttribute('href').replace('#', '');
-                console.log('Navegando a:', section);
-                // Aquí puedes agregar tu lógica de navegación
-            });
+        // Window resize
+        window.addEventListener('resize', () => {
+            if (isHovering) {
+                setupCanvas();
+            }
         });
+
+        // Initial setup
+        setupCanvas();
     </script>
 </body>
 </html>
