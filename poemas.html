@@ -1,431 +1,181 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poems</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echoes</title>
 
-        body {
-            font-family: 'Courier New', monospace;
-            background: #F5F0E8;
-            color: #4A3728;
-            overflow-x: hidden;
-        }
+<!-- Burgues Script (local) -->
+<style>
+@font-face {
+    font-family: "Burgues";
+    src: url("fonts/BurguesScript.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+}
+</style>
 
-        /* Vertical side navigation */
-        .side-nav {
-            position: fixed;
-            right: 40px;
-            top: 50%;
-            transform: translateY(-50%);
-            writing-mode: vertical-rl;
-            z-index: 1000;
-            display: flex;
-            gap: 40px;
-        }
+<!-- Fallback -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Outfit:wght@300;400&display=swap" rel="stylesheet">
 
-        .side-nav a {
-            text-decoration: none;
-            color: #6B5544;
-            font-size: 11px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            position: relative;
-        }
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        .side-nav a::before {
-            content: '';
-            position: absolute;
-            right: -15px;
-            top: 50%;
-            width: 8px;
-            height: 8px;
-            background: transparent;
-            border: 1px solid #6B5544;
-            border-radius: 50%;
-            transform: translateY(-50%);
-            transition: all 0.3s;
-        }
+body {
+    font-family: 'Outfit', sans-serif;
+    background: #e9e7e2;
+    overflow-x: hidden;
+}
 
-        .side-nav a:hover::before,
-        .side-nav a.active::before {
-            background: #6B5544;
-        }
+/* ---------- TEXTO DE FONDO ---------- */
+.background-text {
+    position: fixed;
+    inset: 0;
+    padding: 6rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: rgba(0,0,0,0.25);
+    z-index: 0;
+}
 
-        /* Magazine Container */
-        .magazine-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 80px 60px;
-            perspective: 2000px;
-        }
+.background-text p {
+    max-width: 900px;
+}
 
-        /* Magazine Cover */
-        .magazine-cover {
-            width: 100%;
-            height: 100vh;
-            background: white;
-            border: 1px solid #C9ADA7;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 100px;
-            transition: transform 0.6s;
-            cursor: pointer;
-        }
+/* ---------- CONTENEDOR SCROLL ---------- */
+.scroll-space {
+    height: 250vh;
+    position: relative;
+    z-index: 1;
+}
 
-        .magazine-cover:hover {
-            transform: rotateY(-5deg);
-        }
+/* ---------- HOJA PRINCIPAL ---------- */
+.paper {
+    position: sticky;
+    top: 10vh;
+    margin: 0 auto;
+    width: min(820px, 90%);
+    background: #f6f4ef;
+    padding: 5rem 4rem;
+    box-shadow:
+        0 30px 60px rgba(0,0,0,0.15),
+        inset 0 0 120px rgba(0,0,0,0.04);
+}
 
-        .cover-title {
-            font-size: 120px;
-            font-family: 'Georgia', serif;
-            font-weight: 300;
-            color: #4A3728;
-            margin-bottom: 20px;
-        }
+/* textura papel */
+.paper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: 
+        repeating-linear-gradient(
+            0deg,
+            rgba(0,0,0,0.015),
+            rgba(0,0,0,0.015) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+    pointer-events: none;
+}
 
-        .cover-subtitle {
-            font-size: 12px;
-            letter-spacing: 5px;
-            color: #6B5544;
-            margin-bottom: 40px;
-        }
+/* ---------- TÍTULO CALIGRÁFICO ---------- */
+.poem-title {
+    font-family: "Burgues", "Playfair Display", serif;
+    font-size: clamp(5rem, 10vw, 9rem);
+    color: #1f3d2b;
+    margin-bottom: 3rem;
+}
 
-        .cover-issue {
-            position: absolute;
-            top: 60px;
-            left: 60px;
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: #6B5544;
-        }
+/* ---------- TEXTO POEMA ---------- */
+.poem-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    line-height: 2;
+    color: #1e1e1e;
+}
 
-        .cover-decoration {
-            width: 200px;
-            height: 200px;
-            border: 1px solid #C9ADA7;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 80px;
-            right: 80px;
-            opacity: 0.3;
-        }
+/* ---------- POSTAL ---------- */
+.postcard {
+    margin: 40vh auto 0;
+    width: min(620px, 85%);
+    background: #fffdf7;
+    padding: 3rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    transform: rotate(-2deg);
+}
 
-        /* Magazine Pages */
-        .magazine-spread {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            margin-bottom: 150px;
-            padding: 60px;
-            background: white;
-            border: 1px solid #E8DCC4;
-        }
+.postcard h2 {
+    font-family: "Burgues", serif;
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    color: #1f3d2b;
+}
 
-        .page {
-            padding: 40px;
-            position: relative;
-        }
+.postcard p {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    line-height: 1.9;
+}
 
-        .page-left {
-            border-right: 1px solid #E8DCC4;
-        }
-
-        /* Poem Styles */
-        .poem-title {
-            font-size: 36px;
-            font-family: 'Georgia', serif;
-            font-weight: 300;
-            margin-bottom: 30px;
-            color: #4A3728;
-        }
-
-        .poem-content {
-            font-size: 16px;
-            line-height: 2.2;
-            color: #6B5544;
-            white-space: pre-line;
-            font-family: 'Georgia', serif;
-        }
-
-        .poem-meta {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #E8DCC4;
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: #9A8189;
-        }
-
-        /* Image poem page */
-        .poem-image {
-            width: 100%;
-            height: 500px;
-            background: #E8DCC4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6B5544;
-            font-size: 12px;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-        }
-
-        .image-caption {
-            font-size: 13px;
-            line-height: 1.8;
-            color: #6B5544;
-            font-style: italic;
-        }
-
-        /* Pull quote */
-        .pull-quote {
-            font-size: 28px;
-            font-family: 'Georgia', serif;
-            line-height: 1.6;
-            color: #4A3728;
-            padding: 40px;
-            border-left: 3px solid #C9ADA7;
-            margin: 40px 0;
-        }
-
-        /* Table of contents style page */
-        .toc-page {
-            padding: 60px;
-        }
-
-        .toc-title {
-            font-size: 24px;
-            margin-bottom: 40px;
-            letter-spacing: 3px;
-            color: #4A3728;
-        }
-
-        .toc-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px 0;
-            border-bottom: 1px solid #E8DCC4;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .toc-item:hover {
-            padding-left: 20px;
-            color: #4A3728;
-        }
-
-        .toc-item-title {
-            font-size: 16px;
-        }
-
-        .toc-item-page {
-            font-size: 14px;
-            color: #9A8189;
-        }
-
-        /* Page numbers */
-        .page-number {
-            position: absolute;
-            bottom: 20px;
-            font-size: 11px;
-            color: #9A8189;
-        }
-
-        .page-left .page-number {
-            left: 40px;
-        }
-
-        .page-right .page-number {
-            right: 40px;
-        }
-
-        @media (max-width: 768px) {
-            .magazine-spread {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-            .page-left {
-                border-right: none;
-                border-bottom: 1px solid #E8DCC4;
-            }
-            .cover-title {
-                font-size: 60px;
-            }
-            .side-nav {
-                display: none;
-            }
-        }
-    </style>
+/* ---------- FINAL ---------- */
+.footer-space {
+    height: 80vh;
+}
+</style>
 </head>
+
 <body>
-    <!-- Vertical Side Navigation -->
-    <nav class="side-nav">
-        <a href="index.html">INDEX</a>
-        <a href="python.html">PYTHON</a>
-        <a href="poems.html" class="active">POEMS</a>
-        <a href="photos.html">PHOTOS</a>
-    </nav>
 
-    <div class="magazine-container">
-        <!-- Magazine Cover -->
-        <div class="magazine-cover">
-            <div class="cover-issue">ISSUE NO. 01 — 2024</div>
-            <h1 class="cover-title">Words</h1>
-            <p class="cover-subtitle">A COLLECTION OF THOUGHTS</p>
-            <div class="cover-decoration"></div>
-        </div>
+<!-- TEXTO DE FONDO -->
+<div class="background-text">
+<p>
+Me gustó escribir, descubrí que me gustaba escribir hace muchísimo tiempo.
+Después descubrí el efecto que mis letras pueden tener.
+Escribir se volvió compromiso.
+Una forma de agradecer.
+Una manera de conectar con lo que más profundamente puedo sentir.
+</p>
+</div>
 
-        <!-- Spread 1: Table of Contents -->
-        <div class="magazine-spread">
-            <div class="page page-left">
-                <div class="toc-page">
-                    <h2 class="toc-title">CONTENTS</h2>
-                    <div class="toc-item">
-                        <span class="toc-item-title">First Light</span>
-                        <span class="toc-item-page">03</span>
-                    </div>
-                    <div class="toc-item">
-                        <span class="toc-item-title">Digital Gardens</span>
-                        <span class="toc-item-page">04</span>
-                    </div>
-                    <div class="toc-item">
-                        <span class="toc-item-title">Algorithm Dreams</span>
-                        <span class="toc-item-page">06</span>
-                    </div>
-                    <div class="toc-item">
-                        <span class="toc-item-title">Untitled</span>
-                        <span class="toc-item-page">07</span>
-                    </div>
-                    <div class="toc-item">
-                        <span class="toc-item-title">Between Pixels</span>
-                        <span class="toc-item-page">09</span>
-                    </div>
-                </div>
-                <div class="page-number">01</div>
-            </div>
-            <div class="page page-right">
-                <div class="poem-content">
-                    <p style="margin-top: 100px; text-align: center; font-size: 18px; font-style: italic;">
-                        "Every line of code is a line of poetry,
-                        every bug is a haiku of what went wrong,
-                        every function is a metaphor."
-                    </p>
-                </div>
-                <div class="page-number">02</div>
-            </div>
-        </div>
+<div class="scroll-space">
 
-        <!-- Spread 2: First Poem -->
-        <div class="magazine-spread">
-            <div class="page page-left">
-                <h2 class="poem-title">First Light</h2>
-                <div class="poem-content">Your poem here
-Line by line
-With proper spacing
-And rhythm
+    <!-- PAPEL PRINCIPAL -->
+    <div class="paper">
+        <div class="poem-title">Eches</div>
+        <div class="poem-text">
+            <p>
+            Me gustó escribir, descubrí que me gustaba escribir hace muchísimo.
+            Tiempo después entendí que escribir era una forma de quedarme,
+            de dejar huella sin ruido, de tocar sin manos.
+            </p>
 
-Like morning breaking
-Through venetian blinds
-Striping the floor
-In gold and shadow
-                </div>
-                <div class="poem-meta">
-                    WRITTEN IN SAN DIEGO, CA — WINTER 2024
-                </div>
-                <div class="page-number">03</div>
-            </div>
-            <div class="page page-right">
-                <div class="poem-image">[ACCOMPANYING IMAGE OR VISUAL]</div>
-                <div class="page-number">04</div>
-            </div>
-        </div>
-
-        <!-- Spread 3: Visual Poem -->
-        <div class="magazine-spread">
-            <div class="page page-left">
-                <div class="poem-image">[VISUAL / PHOTO]</div>
-                <p class="image-caption">
-                    Sometimes images speak louder than words, or they speak together, 
-                    creating something new in the space between.
-                </p>
-                <div class="page-number">05</div>
-            </div>
-            <div class="page page-right">
-                <h2 class="poem-title">Algorithm Dreams</h2>
-                <div class="poem-content">while True:
-    seek beauty
-    in the infinite loop
-    of consciousness
-    
-    if found:
-        return wonder
-    else:
-        continue searching
-                </div>
-                <div class="poem-meta">
-                    GENERATED BY HEART — COMPILED BY HAND
-                </div>
-                <div class="page-number">06</div>
-            </div>
-        </div>
-
-        <!-- Spread 4: Pull Quote & Poem -->
-        <div class="magazine-spread">
-            <div class="page page-left">
-                <div class="pull-quote">
-                    "We build cathedrals in code, write sonnets in syntax, 
-                    and dream in binary."
-                </div>
-                <div class="page-number">07</div>
-            </div>
-            <div class="page page-right">
-                <h2 class="poem-title">Between Pixels</h2>
-                <div class="poem-content">Your final poem
-Goes here
-    Indented if you want
-        Or flowing free
-
-The space between
-Is where the meaning lives
-                </div>
-                <div class="poem-meta">
-                    LOCATION UNKNOWN — TIME UNCERTAIN
-                </div>
-                <div class="page-number">08</div>
-            </div>
-        </div>
-
-        <!-- Back Cover -->
-        <div class="magazine-cover" style="height: 60vh; background: #E8DCC4;">
-            <p style="font-size: 14px; letter-spacing: 3px; color: #6B5544;">
-                TO BE CONTINUED...
+            <p>
+            Escribo porque el cuerpo no siempre alcanza,
+            porque la voz a veces no sabe,
+            porque el papel guarda lo que el tiempo intenta borrar.
             </p>
         </div>
     </div>
 
-    <script>
-        // Add smooth scroll behavior
-        document.querySelectorAll('.toc-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const spreads = document.querySelectorAll('.magazine-spread');
-                const index = parseInt(item.querySelector('.toc-item-page').textContent) - 1;
-                if (spreads[Math.floor(index / 2)]) {
-                    spreads[Math.floor(index / 2)].scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-    </script>
+    <!-- POSTAL -->
+    <div class="postcard">
+        <h2>Nota</h2>
+        <p>
+        Esto también es un poema.
+        Un pedazo arrancado,
+        una frase que no quiso quedarse en la hoja principal.
+        </p>
+    </div>
+
+    <div class="footer-space"></div>
+
+</div>
+
 </body>
 </html>
+
