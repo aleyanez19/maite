@@ -12,6 +12,7 @@
 
 :root {
     --text-primary: #1a1a1a;
+    --text-secondary: #7a7a7a;
     --bg-primary: #fafafa;
 }
 
@@ -19,13 +20,92 @@ body {
     font-family: 'Outfit', sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
 }
 
+/* Header Navigation */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 4rem;
+    background: transparent;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+header.visible {
+    opacity: 1;
+    pointer-events: all;
+    background: rgba(250, 250, 250, 0.98);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+nav {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-left, .nav-right {
+    display: flex;
+    gap: 2.5rem;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 0.813rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--text-primary);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+nav a:hover::after { width: 100%; }
+
+/* Corner details */
+.corner-detail {
+    position: fixed;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: opacity 0.8s ease 0.4s;
+    z-index: 10;
+}
+
+.corner-detail.visible { opacity: 1; }
+.corner-detail.top-left { top: 2rem; left: 4rem; }
+.corner-detail.bottom-right { bottom: 2rem; right: 4rem; }
+
+/* Hero */
 .hero {
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 4rem;
 }
 
 .title-container {
@@ -39,7 +119,10 @@ body {
     font-weight: 900;
     letter-spacing: -0.04em;
     line-height: 0.85;
+    text-transform: uppercase;
     transition: opacity .4s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .title-script {
@@ -47,25 +130,76 @@ body {
     font-size: clamp(2.5rem, 8vw, 6rem);
     margin-top: -1rem;
     transition: opacity .4s ease;
+    position: relative;
+    z-index: 2;
 }
 
 canvas {
-    position: absolute;
-    inset: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
     opacity: 0;
     transition: opacity .4s ease;
+    z-index: 5;
 }
 
 .title-container:hover canvas { opacity: 1; }
 .title-container:hover .title-main,
 .title-container:hover .title-script { opacity: 0; }
+
+/* Background texture */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.01) 2px, rgba(0,0,0,0.01) 4px);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    header { padding: 1.5rem 2.5rem; }
+    nav { flex-direction: column; gap: 1.5rem; }
+    .nav-left, .nav-right { gap: 1.5rem; }
+    .corner-detail.top-left { left: 2.5rem; }
+    .corner-detail.bottom-right { right: 2.5rem; }
+}
+
+@media (max-width: 768px) {
+    header { padding: 1.5rem 2rem; }
+    .hero { padding: 2rem; }
+    nav a { font-size: 0.75rem; }
+    .corner-detail { font-size: 0.65rem; }
+}
 </style>
 </head>
 
 <body>
 
-<section class="hero">
+<!-- Corner Details -->
+<div class="corner-detail top-left" id="cornerLeft">Index</div>
+<div class="corner-detail bottom-right" id="cornerRight">2024</div>
+
+<!-- Header Navigation -->
+<header id="header">
+    <nav>
+        <div class="nav-left">
+            <a href="fotos.html">Fotos</a>
+            <a href="poemas.html">Poemas</a>
+        </div>
+        <div class="nav-right">
+            <a href="videos.html">Videos</a>
+            <a href="proyectos.html">Proyectos</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero" id="hero">
     <div class="title-container" id="title">
         <canvas id="canvas"></canvas>
         <div class="title-main" id="tMain">PORTFOLIO</div>
@@ -79,6 +213,10 @@ const ctx = canvas.getContext("2d");
 const title = document.getElementById("title");
 const tMain = document.getElementById("tMain");
 const tScript = document.getElementById("tScript");
+const hero = document.getElementById("hero");
+const header = document.getElementById("header");
+const cornerLeft = document.getElementById("cornerLeft");
+const cornerRight = document.getElementById("cornerRight");
 
 let bgPixels = [];
 let textPixels = [];
@@ -87,40 +225,210 @@ let time = 0;
 
 /* ---------- RESIZE ---------- */
 function resize() {
-    const r = title.getBoundingClientRect();
-    canvas.width = r.width;
-    canvas.height = r.height;
+    // Make canvas fullscreen
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
 resize();
-window.addEventListener("resize", resize);
+window.addEventListener("resize", () => {
+    resize();
+    if(hover) {
+        createBackground();
+        createTextPixels();
+    }
+});
 
-/* ---------- BACKGROUND PIXELS ---------- */
+/* ---------- BACKGROUND GEOMETRIC PIXELS ---------- */
 class BgPixel {
-    constructor(x,y,s) {
-        this.x = x; this.y = y;
-        this.bx = x; this.by = y;
+    constructor(x, y, s, pattern) {
+        this.x = x; 
+        this.y = y;
+        this.bx = x; 
+        this.by = y;
         this.s = s;
-        this.p = Math.random()*Math.PI*2;
-        this.a = 4 + Math.random()*10;
-        this.sp = 0.002 + Math.random()*0.003;
+        this.pattern = pattern;
+        this.phase = Math.random() * Math.PI * 2;
+        this.speed = 0.01 + Math.random() * 0.025;
+        
+        // Geometric movement parameters
+        this.radius = 6 + Math.random() * 18;
+        this.angle = Math.random() * Math.PI * 2;
+        this.angleSpeed = (Math.random() - 0.5) * 0.04;
+        
+        // For wave patterns
+        this.waveAmplitude = 4 + Math.random() * 12;
+        this.waveFrequency = 0.008 + Math.random() * 0.025;
+        
+        // For zigzag
+        this.zigzagAmplitude = 8 + Math.random() * 12;
+        this.zigzagFreq = 0.02 + Math.random() * 0.03;
+        
+        // For star patterns
+        this.starPoints = 3 + Math.floor(Math.random() * 5); // 3-7 points
+        this.starInnerRadius = this.radius * 0.5;
     }
-    update(t){
-        this.x = this.bx + Math.sin(t*this.sp + this.p)*this.a;
-        this.y = this.by + Math.cos(t*this.sp + this.p)*this.a;
+    
+    update(t) {
+        this.phase += this.speed;
+        this.angle += this.angleSpeed;
+        
+        switch(this.pattern) {
+            case 'circular':
+                // Circular orbit
+                this.x = this.bx + Math.cos(this.angle) * this.radius;
+                this.y = this.by + Math.sin(this.angle) * this.radius;
+                break;
+                
+            case 'wave':
+                // Sine wave movement
+                this.x = this.bx + Math.sin(t * this.waveFrequency + this.phase) * this.waveAmplitude;
+                this.y = this.by + Math.cos(t * this.waveFrequency * 0.7 + this.phase) * this.waveAmplitude * 0.6;
+                break;
+                
+            case 'spiral':
+                // Spiral expansion/contraction
+                const spiralRadius = this.radius + Math.sin(t * this.speed) * 6;
+                this.x = this.bx + Math.cos(this.angle) * spiralRadius;
+                this.y = this.by + Math.sin(this.angle) * spiralRadius;
+                break;
+                
+            case 'diamond':
+                // Diamond/rhombus pattern
+                const diamondPhase = (t * this.speed + this.phase) % (Math.PI * 2);
+                const octant = Math.floor(diamondPhase / (Math.PI / 4)) % 8;
+                const localPhase = (diamondPhase % (Math.PI / 4)) / (Math.PI / 4);
+                
+                const positions = [
+                    [1, 0], [1, 1], [0, 1], [-1, 1],
+                    [-1, 0], [-1, -1], [0, -1], [1, -1]
+                ];
+                const curr = positions[octant];
+                const next = positions[(octant + 1) % 8];
+                
+                this.x = this.bx + (curr[0] + (next[0] - curr[0]) * localPhase) * this.radius;
+                this.y = this.by + (curr[1] + (next[1] - curr[1]) * localPhase) * this.radius;
+                break;
+                
+            case 'figure8':
+                // Figure-eight / lemniscate
+                const a = this.radius;
+                const lemniscateT = t * this.speed + this.phase;
+                this.x = this.bx + (a * Math.cos(lemniscateT)) / (1 + Math.sin(lemniscateT) * Math.sin(lemniscateT));
+                this.y = this.by + (a * Math.cos(lemniscateT) * Math.sin(lemniscateT)) / (1 + Math.sin(lemniscateT) * Math.sin(lemniscateT));
+                break;
+                
+            case 'star':
+                // Star pattern (pentagram-like)
+                const starT = t * this.speed + this.phase;
+                const pointIndex = Math.floor((starT % (Math.PI * 2)) / (Math.PI * 2 / this.starPoints));
+                const pointPhase = ((starT % (Math.PI * 2)) % (Math.PI * 2 / this.starPoints)) / (Math.PI * 2 / this.starPoints);
+                
+                const currAngle = pointIndex * (Math.PI * 2 / this.starPoints);
+                const nextAngle = (pointIndex + 1) * (Math.PI * 2 / this.starPoints);
+                
+                // Alternate between outer and inner radius
+                const isOuter = pointIndex % 2 === 0;
+                const currR = isOuter ? this.radius : this.starInnerRadius;
+                const nextR = isOuter ? this.starInnerRadius : this.radius;
+                
+                const currX = Math.cos(currAngle) * currR;
+                const currY = Math.sin(currAngle) * currR;
+                const nextX = Math.cos(nextAngle) * nextR;
+                const nextY = Math.sin(nextAngle) * nextR;
+                
+                this.x = this.bx + currX + (nextX - currX) * pointPhase;
+                this.y = this.by + currY + (nextY - currY) * pointPhase;
+                break;
+                
+            case 'zigzag':
+                // Zigzag pattern
+                const zigT = t * this.zigzagFreq + this.phase;
+                const zigX = Math.floor(zigT) % 2 === 0 ? 1 : -1;
+                const zigProgress = zigT % 1;
+                this.x = this.bx + zigX * this.zigzagAmplitude * (1 - Math.abs(zigProgress * 2 - 1));
+                this.y = this.by + (zigT - Math.floor(zigT)) * this.zigzagAmplitude - this.zigzagAmplitude * 0.5;
+                break;
+                
+            case 'infinity':
+                // Horizontal figure-eight
+                const infT = t * this.speed + this.phase;
+                this.x = this.bx + this.radius * Math.sin(infT);
+                this.y = this.by + this.radius * Math.sin(infT) * Math.cos(infT) * 0.8;
+                break;
+                
+            case 'square':
+                // Square pattern
+                const squarePhase = (t * this.speed + this.phase) % (Math.PI * 2);
+                const side = Math.floor(squarePhase / (Math.PI / 2)) % 4;
+                const sideProgress = (squarePhase % (Math.PI / 2)) / (Math.PI / 2);
+                
+                const squarePositions = [
+                    [1, -1], [1, 1], [-1, 1], [-1, -1]
+                ];
+                const sCurr = squarePositions[side];
+                const sNext = squarePositions[(side + 1) % 4];
+                
+                this.x = this.bx + (sCurr[0] + (sNext[0] - sCurr[0]) * sideProgress) * this.radius;
+                this.y = this.by + (sCurr[1] + (sNext[1] - sCurr[1]) * sideProgress) * this.radius;
+                break;
+                
+            case 'triangle':
+                // Triangle pattern
+                const triPhase = (t * this.speed + this.phase) % (Math.PI * 2);
+                const triSide = Math.floor(triPhase / (Math.PI * 2 / 3)) % 3;
+                const triProgress = (triPhase % (Math.PI * 2 / 3)) / (Math.PI * 2 / 3);
+                
+                const triPositions = [
+                    [0, -1], [0.866, 0.5], [-0.866, 0.5]
+                ];
+                const tCurr = triPositions[triSide];
+                const tNext = triPositions[(triSide + 1) % 3];
+                
+                this.x = this.bx + (tCurr[0] + (tNext[0] - tCurr[0]) * triProgress) * this.radius;
+                this.y = this.by + (tCurr[1] + (tNext[1] - tCurr[1]) * triProgress) * this.radius;
+                break;
+                
+            case 'clover':
+                // Four-leaf clover pattern
+                const cloverT = t * this.speed + this.phase;
+                const cloverR = this.radius * Math.abs(Math.sin(2 * cloverT));
+                this.x = this.bx + cloverR * Math.cos(cloverT);
+                this.y = this.by + cloverR * Math.sin(cloverT);
+                break;
+                
+            case 'heart':
+                // Heart shape
+                const heartT = t * this.speed + this.phase;
+                const scale = this.radius / 10;
+                this.x = this.bx + scale * 16 * Math.pow(Math.sin(heartT), 3);
+                this.y = this.by - scale * (13 * Math.cos(heartT) - 5 * Math.cos(2 * heartT) - 2 * Math.cos(3 * heartT) - Math.cos(4 * heartT));
+                break;
+        }
     }
-    draw(){
-        ctx.fillStyle = "rgba(26,26,26,0.25)";
-        ctx.fillRect(this.x,this.y,this.s,this.s);
+    
+    draw() {
+        ctx.fillStyle = "rgba(26, 26, 26, 0.18)";
+        ctx.fillRect(Math.round(this.x), Math.round(this.y), this.s - 0.5, this.s - 0.5);
     }
 }
 
 function createBackground() {
     bgPixels = [];
-    const density = 4;
-    for(let y=0;y<canvas.height;y+=density){
-        for(let x=0;x<canvas.width;x+=density){
-            if(Math.random()>0.15){
-                bgPixels.push(new BgPixel(x,y,2));
+    const patterns = [
+        'circular', 'wave', 'spiral', 'diamond', 'figure8', 
+        'star', 'zigzag', 'infinity', 'square', 'triangle', 
+        'clover', 'heart'
+    ];
+    const gridSize = 6; // MUCH smaller grid = WAY MORE PIXELS
+    
+    for(let y = -20; y < canvas.height + 20; y += gridSize) {
+        for(let x = -20; x < canvas.width + 20; x += gridSize) {
+            // 98% spawn rate - almost every single spot
+            if(Math.random() > 0.02) {
+                const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+                const offsetX = (Math.random() - 0.5) * gridSize * 0.8;
+                const offsetY = (Math.random() - 0.5) * gridSize * 0.8;
+                bgPixels.push(new BgPixel(x + offsetX, y + offsetY, 2, pattern));
             }
         }
     }
@@ -136,58 +444,79 @@ function createTextPixels() {
 
     tctx.fillStyle = "#000";
     tctx.textAlign = "center";
+    tctx.textBaseline = "middle";
 
-    tctx.font = `900 ${tMain.offsetHeight}px Outfit`;
-    tctx.fillText("PORTFOLIO", tmp.width/2, tMain.offsetHeight);
+    // Get actual measurements
+    const mainHeight = tMain.offsetHeight;
+    const scriptHeight = tScript.offsetHeight;
+    
+    // Calculate center of viewport
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
 
-    tctx.font = `400 ${tScript.offsetHeight}px Allura`;
-    tctx.fillText("Alejandra", tmp.width/2, tMain.offsetHeight + tScript.offsetHeight - 20);
+    // Draw PORTFOLIO (centered vertically, accounting for script below)
+    tctx.font = `900 ${mainHeight}px Outfit`;
+    const textOffset = 30; // Space between lines
+    tctx.fillText("PORTFOLIO", centerX, centerY - textOffset);
 
-    const img = tctx.getImageData(0,0,tmp.width,tmp.height).data;
+    // Draw Alejandra
+    tctx.font = `400 ${scriptHeight}px Allura`;
+    tctx.fillText("Alejandra", centerX, centerY + mainHeight / 2);
+
+    const img = tctx.getImageData(0, 0, tmp.width, tmp.height).data;
     const step = 3;
 
-    for(let y=0;y<tmp.height;y+=step){
-        for(let x=0;x<tmp.width;x+=step){
-            const i = (y*tmp.width + x)*4;
-            if(img[i+3] > 120){
-                textPixels.push({x,y,s:step});
+    for(let y = 0; y < tmp.height; y += step) {
+        for(let x = 0; x < tmp.width; x += step) {
+            const i = (y * tmp.width + x) * 4;
+            if(img[i + 3] > 120) {
+                textPixels.push({ x, y, s: step });
             }
         }
     }
 }
 
 /* ---------- ANIMATION ---------- */
-function animate(){
+function animate() {
     if(!hover) return;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     time++;
 
-    // fondo primero
-    bgPixels.forEach(p => { p.update(time); p.draw(); });
+    // Background geometric pixels (layer 1)
+    bgPixels.forEach(p => { 
+        p.update(time); 
+        p.draw(); 
+    });
 
-    // texto encima
-    ctx.fillStyle = "rgba(26,26,26,0.9)";
+    // Text pixels on top (layer 2)
+    ctx.fillStyle = "rgba(26, 26, 26, 0.95)";
     textPixels.forEach(p => {
-        ctx.fillRect(p.x,p.y,p.s-0.5,p.s-0.5);
+        ctx.fillRect(p.x, p.y, p.s - 0.5, p.s - 0.5);
     });
 
     requestAnimationFrame(animate);
 }
 
 /* ---------- EVENTS ---------- */
-title.addEventListener("mouseenter",()=>{
+title.addEventListener("mouseenter", () => {
     hover = true;
     createBackground();
     createTextPixels();
+    time = 0;
     animate();
 });
 
-title.addEventListener("mouseleave",()=>{
+title.addEventListener("mouseleave", () => {
     hover = false;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+hero.addEventListener('click', () => {
+    header.classList.add('visible');
+    cornerLeft.classList.add('visible');
+    cornerRight.classList.add('visible');
 });
 </script>
 
 </body>
 </html>
-
